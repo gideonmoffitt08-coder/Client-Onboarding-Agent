@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Client Onboarding Agent</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Unbounded:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f5f0e8;--surface:#fffdf7;--surface2:#f0ebe0;--border:#d4c9b0;--accent:#1a1a2e;--red:#c8522a;--green:#2d6a4f;--text:#1a1a1e;--muted:#7a7260;--mono:'DM Mono',monospace;--display:'Unbounded',sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--mono);min-height:100vh;padding:32px 20px}
+.wrap{max-width:860px;margin:0 auto}
+h1{font-family:var(--display);font-size:clamp(1.6rem,4vw,2.4rem);font-weight:900;letter-spacing:-0.03em;margin-bottom:8px}
+h1 em{font-style:normal;color:var(--red)}
+.sub{font-size:0.72rem;color:var(--muted);margin-bottom:36px;line-height:1.6}
+.panel{background:var(--surface);border:1.5px solid var(--border);border-radius:4px;padding:28px;margin-bottom:20px;box-shadow:3px 3px 0 var(--border);position:relative}
+.panel-label{position:absolute;top:-10px;left:20px;background:var(--surface);padding:0 8px;font-size:0.58rem;letter-spacing:0.2em;color:var(--red);text-transform:uppercase}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:580px){.grid{grid-template-columns:1fr}}
+.fg{display:flex;flex-direction:column;gap:6px}
+.fg label{font-size:0.62rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted)}
+.fg input,.fg select,.fg textarea{background:var(--bg);border:1.5px solid var(--border);padding:11px 13px;color:var(--text);font-family:var(--mono);font-size:0.78rem;outline:none;transition:border-color 0.2s;width:100%;border-radius:2px}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--accent)}
+.fg input::placeholder,.fg textarea::placeholder{color:var(--muted);opacity:0.5}
+.fg textarea{resize:vertical;min-height:75px}
+.full{grid-column:1/-1}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:13px 26px;font-family:var(--mono);font-size:0.72rem;letter-spacing:0.08em;cursor:pointer;border:1.5px solid;transition:all 0.15s;text-transform:uppercase;text-decoration:none;border-radius:2px}
+.btn-dark{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.btn-dark:hover:not(:disabled){background:var(--red);border-color:var(--red);transform:translate(-2px,-2px);box-shadow:4px 4px 0 var(--accent)}
+.btn-dark:disabled{opacity:0.4;cursor:not-allowed}
+.btn-out{background:transparent;color:var(--accent);border-color:var(--accent)}
+.btn-out:hover{background:var(--accent);color:var(--bg)}
+.btn-gmail{background:#ea4335;color:#fff;border-color:#ea4335;text-decoration:none}
+.btn-gmail:hover{background:#c5221f;transform:translate(-2px,-2px);box-shadow:4px 4px 0 var(--accent)}
+.brow{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-top:4px}
+.loader-wrap{display:none;text-align:center;padding:48px}
+.loader-wrap.on{display:block}
+.loader{width:44px;height:44px;border:3px solid var(--border);border-top-color:var(--red);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loader-wrap p{font-size:0.72rem;color:var(--muted)}
+.out{display:none}
+.out.on{display:block}
+.tabs{display:flex;gap:0;overflow-x:auto;margin-bottom:0}
+.tab{padding:9px 18px;font-family:var(--mono);font-size:0.62rem;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;border:1.5px solid var(--border);border-bottom:none;background:var(--surface2);color:var(--muted);white-space:nowrap;margin-right:-1.5px;transition:all 0.15s}
+.tab.on{background:var(--surface);color:var(--accent);border-color:var(--accent);position:relative;z-index:1}
+.tab-body{background:var(--surface);border:1.5px solid var(--border);padding:24px;display:none;position:relative}
+.tab-body.on{display:block}
+.tlabel{font-size:0.58rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--red);margin-bottom:14px;display:block}
+.content{font-size:0.78rem;line-height:1.85;white-space:pre-wrap;font-family:var(--mono);color:var(--text)}
+.copy{position:absolute;top:14px;right:14px;padding:5px 10px;font-family:var(--mono);font-size:0.58rem;letter-spacing:0.1em;cursor:pointer;border:1px solid var(--border);background:var(--bg);color:var(--muted);text-transform:uppercase;transition:all 0.15s;border-radius:2px}
+.copy:hover{border-color:var(--accent);color:var(--accent)}
+.checklist{list-style:none}
+.checklist li{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:0.76rem;line-height:1.5}
+.checklist li:last-child{border-bottom:none}
+.checklist li::before{content:'□';color:var(--red);font-size:1rem;flex-shrink:0}
+.divider{height:1.5px;background:var(--border);margin:20px 0}
+.err{font-size:0.68rem;color:var(--red);margin-top:10px;display:none;line-height:1.5;padding:10px;background:rgba(200,82,42,0.08);border:1px solid rgba(200,82,42,0.2);border-radius:2px}
+.cbar{display:none;background:var(--accent);color:var(--bg);padding:11px 20px;font-size:0.68rem;letter-spacing:0.05em;margin-bottom:20px;border-radius:2px;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.cbar.on{display:flex}
+.tag{display:inline-block;padding:2px 8px;font-size:0.58rem;letter-spacing:0.1em;text-transform:uppercase;border-radius:2px;margin-right:4px}
+.tag-g{background:rgba(45,106,79,0.3);color:#a8d5b5}
+.tag-r{background:rgba(200,82,42,0.3);color:#f5c4b0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div style="font-size:0.58rem;letter-spacing:0.25em;color:var(--muted);margin-bottom:12px;text-transform:uppercase">Gideon Moffitt Web Design</div>
+<h1>Client <em>Onboarding</em> Agent</h1>
+<p class="sub">Enter new client info — get a welcome email, checklist, intake questions, invoice and contract summary in 60 seconds.</p>
+
+<div class="cbar" id="cbar">
+  <span id="cbarName">—</span>
+  <span><span class="tag tag-g" id="cbarSvc">—</span><span class="tag tag-r" id="cbarDep">—</span></span>
+</div>
+
+<div id="formWrap">
+  <div class="panel">
+    <div class="panel-label">01 — Client Info</div>
+    <div class="grid">
+      <div class="fg"><label>Business Name *</label><input id="bizName" placeholder="e.g. Maria's Bakery"/></div>
+      <div class="fg"><label>Owner Name *</label><input id="ownerName" placeholder="e.g. Maria Gonzalez"/></div>
+      <div class="fg"><label>Client Email *</label><input type="email" id="clientEmail" placeholder="e.g. maria@email.com"/></div>
+      <div class="fg"><label>Client Phone</label><input id="clientPhone" placeholder="e.g. (713) 555-0123"/></div>
+      <div class="fg"><label>Business Type</label><input id="bizType" placeholder="e.g. Bakery, Auto Repair"/></div>
+      <div class="fg"><label>Location</label><input id="bizLocation" placeholder="e.g. Katy, TX"/></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-label">02 — Project Details</div>
+    <div class="grid">
+      <div class="fg"><label>Service Type *</label>
+        <select id="svcType">
+          <option value="">Select...</option>
+          <option value="New Website Build">New Website Build</option>
+          <option value="Website Maintenance">Website Maintenance</option>
+          <option value="New Build + Maintenance Plan">New Build + Maintenance Plan</option>
+        </select>
+      </div>
+      <div class="fg"><label>Project Value ($) *</label><input type="number" id="projVal" placeholder="e.g. 1500"/></div>
+      <div class="fg"><label>Timeline</label><input id="timeline" placeholder="e.g. 2-3 weeks"/></div>
+      <div class="fg"><label>How They Found You</label><input id="howFound" placeholder="e.g. Cold call"/></div>
+      <div class="fg full"><label>Call Notes (optional)</label><textarea id="callNotes" placeholder="e.g. Wants 5-page site, earthy colors, no logo yet..."></textarea></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-label">03 — API Key</div>
+    <div class="fg"><label>Claude API Key</label><input type="password" id="apiKey" placeholder="sk-ant-api03-..."/></div>
+    <div style="font-size:0.62rem;color:var(--muted);margin-top:8px">Saved locally in your browser only.</div>
+  </div>
+
+  <div class="brow">
+    <button class="btn btn-dark" onclick="generate()">▶ Generate Onboarding Package</button>
+    <button class="btn btn-out" onclick="clearForm()">✕ Clear</button>
+  </div>
+  <div class="err" id="errMsg"></div>
+</div>
+
+<div class="loader-wrap" id="loaderWrap">
+  <div class="loader"></div>
+  <p>Generating your onboarding package...</p>
+</div>
+
+<div class="out" id="outWrap">
+  <div class="tabs">
+    <div class="tab on" onclick="switchTab(this,'email')">Welcome Email</div>
+    <div class="tab" onclick="switchTab(this,'checklist')">Checklist</div>
+    <div class="tab" onclick="switchTab(this,'intake')">Intake Questions</div>
+    <div class="tab" onclick="switchTab(this,'invoice')">Invoice</div>
+    <div class="tab" onclick="switchTab(this,'contract')">Contract</div>
+  </div>
+
+  <div class="tab-body on" id="tb-email">
+    <button class="copy" onclick="cp('emailTxt',this)">Copy</button>
+    <span class="tlabel">Welcome Email</span>
+    <div class="content" id="emailTxt"></div>
+    <div class="divider"></div>
+    <div class="brow">
+      <a class="btn btn-gmail" id="gmailBtn" href="#" target="_blank">✉ Open in Gmail</a>
+      <span style="font-size:0.62rem;color:var(--muted)">Pre-filled and ready to send.</span>
+    </div>
+  </div>
+
+  <div class="tab-body" id="tb-checklist">
+    <button class="copy" onclick="cpList(this)">Copy</button>
+    <span class="tlabel">Project Checklist</span>
+    <ul class="checklist" id="ckList"></ul>
+  </div>
+
+  <div class="tab-body" id="tb-intake">
+    <button class="copy" onclick="cp('intakeTxt',this)">Copy</button>
+    <span class="tlabel">Intake Questions — Send to Client</span>
+    <div class="content" id="intakeTxt"></div>
+  </div>
+
+  <div class="tab-body" id="tb-invoice">
+    <button class="copy" onclick="cp('invoiceTxt',this)">Copy</button>
+    <span class="tlabel">Deposit Invoice</span>
+    <div class="content" id="invoiceTxt"></div>
+  </div>
+
+  <div class="tab-body" id="tb-contract">
+    <button class="copy" onclick="cp('contractTxt',this)">Copy</button>
+    <span class="tlabel">Contract Summary</span>
+    <div class="content" id="contractTxt"></div>
+  </div>
+
+  <div class="divider"></div>
+  <div class="brow">
+    <button class="btn btn-out" onclick="resetForm()">← New Client</button>
+  </div>
+</div>
+
+</div>
+<script>
+var akEl=document.getElementById('apiKey');
+var savedKey=localStorage.getItem('coa_ak');
+if(savedKey)akEl.value=savedKey;
+akEl.addEventListener('change',function(){localStorage.setItem('coa_ak',akEl.value);});
+
+function switchTab(el,name){
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('on');});
+  document.querySelectorAll('.tab-body').forEach(function(t){t.classList.remove('on');});
+  el.classList.add('on');
+  document.getElementById('tb-'+name).classList.add('on');
+}
+
+function showErr(m){
+  var e=document.getElementById('errMsg');
+  e.textContent=m;
+  e.style.display=m?'block':'none';
+}
+
+async function generate(){
+  var apiKey=akEl.value.trim();
+  var bizName=document.getElementById('bizName').value.trim();
+  var ownerName=document.getElementById('ownerName').value.trim();
+  var clientEmail=document.getElementById('clientEmail').value.trim();
+  var clientPhone=document.getElementById('clientPhone').value.trim();
+  var bizType=document.getElementById('bizType').value.trim();
+  var bizLocation=document.getElementById('bizLocation').value.trim();
+  var svcType=document.getElementById('svcType').value;
+  var projVal=document.getElementById('projVal').value.trim();
+  var timeline=document.getElementById('timeline').value.trim()||'2-3 weeks';
+  var howFound=document.getElementById('howFound').value.trim();
+  var callNotes=document.getElementById('callNotes').value.trim();
+
+  if(!apiKey)return showErr('Please enter your Claude API key');
+  if(!bizName)return showErr('Business name is required');
+  if(!ownerName)return showErr('Owner name is required');
+  if(!clientEmail)return showErr('Client email is required');
+  if(!svcType)return showErr('Please select a service type');
+  if(!projVal)return showErr('Please enter the project value');
+
+  showErr('');
+  var deposit=Math.round(parseFloat(projVal)*0.5);
+  var finalPay=parseFloat(projVal)-deposit;
+  var today=new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+  var invNum='INV-'+Date.now().toString().slice(-5);
+
+  document.getElementById('formWrap').style.display='none';
+  document.getElementById('loaderWrap').classList.add('on');
+
+  var prompt='You are a professional onboarding assistant for Gideon Moffitt Web Design, a web design agency in Houston TX. Email: gideonmoffitt08@gmail.com\n\nNew client:\n- Business: '+bizName+'\n- Owner: '+ownerName+'\n- Email: '+clientEmail+'\n- Phone: '+(clientPhone||'Not provided')+'\n- Type: '+(bizType||'Small business')+'\n- Location: '+(bizLocation||'Houston TX area')+'\n- Service: '+svcType+'\n- Total value: $'+projVal+'\n- Deposit (50%): $'+deposit+'\n- Final (50%): $'+finalPay+'\n- Timeline: '+timeline+'\n- How found: '+(howFound||'Cold outreach')+'\n- Notes: '+(callNotes||'None')+'\n\nGenerate 5 sections using EXACTLY these markers:\n\nSECTION_EMAIL_BEGIN\nSubject: [subject]\n\n[email body]\nSECTION_EMAIL_END\n\nSECTION_CHECKLIST_BEGIN\n- [step 1]\n- [step 2]\n[all steps from deposit payment to site launch]\nSECTION_CHECKLIST_END\n\nSECTION_INTAKE_BEGIN\n1. [question]\n2. [question]\n[8 questions specific to '+bizType+' and '+svcType+']\nSECTION_INTAKE_END\n\nSECTION_INVOICE_BEGIN\nINVOICE\nInvoice #: '+invNum+'\nDate: '+today+'\n\nFrom: Gideon Moffitt Web Design | gideonmoffitt08@gmail.com\nTo: '+bizName+' | '+ownerName+' | '+clientEmail+'\n\nService: '+svcType+'\nTotal: $'+projVal+'\nDeposit due now: $'+deposit+'\nFinal payment on completion: $'+finalPay+'\n\nPayment: Venmo, Zelle, CashApp, or check to Gideon Moffitt\nSECTION_INVOICE_END\n\nSECTION_CONTRACT_BEGIN\n[Contract summary with: Services, Payment Terms, Timeline, Revisions, Ownership, Cancellation]\nSECTION_CONTRACT_END';
+
+  try{
+    var response=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key':apiKey,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body:JSON.stringify({
+        model:'claude-haiku-4-5-20251001',
+        max_tokens:4000,
+        messages:[{role:'user',content:prompt}]
+      })
+    });
+
+    if(!response.ok){
+      var errData=await response.json();
+      throw new Error((errData.error&&errData.error.message)||'API error '+response.status);
+    }
+
+    var data=await response.json();
+    var txt=data.content[0].text;
+
+    function extract(tag){
+      var m=txt.match(new RegExp('SECTION_'+tag+'_BEGIN([\\s\\S]*?)SECTION_'+tag+'_END'));
+      return m?m[1].trim():'Section not generated';
+    }
+
+    var emailRaw=extract('EMAIL');
+    var checklistRaw=extract('CHECKLIST');
+    var intakeRaw=extract('INTAKE');
+    var invoiceRaw=extract('INVOICE');
+    var contractRaw=extract('CONTRACT');
+
+    var subjMatch=emailRaw.match(/^Subject:\s*(.+)$/m);
+    var emailSubject=subjMatch?subjMatch[1].trim():'Welcome to Gideon Moffitt Web Design';
+    var emailBody=emailRaw.replace(/^Subject:.+\n\n?/m,'').trim();
+
+    document.getElementById('emailTxt').textContent=emailBody;
+
+    var ckEl=document.getElementById('ckList');
+    ckEl.innerHTML='';
+    checklistRaw.split('\n').filter(function(l){return l.trim();}).forEach(function(item){
+      var li=document.createElement('li');
+      li.textContent=item.replace(/^[-•*\d.]\s*/,'');
+      ckEl.appendChild(li);
+    });
+
+    document.getElementById('intakeTxt').textContent=intakeRaw;
+    document.getElementById('invoiceTxt').textContent=invoiceRaw;
+    document.getElementById('contractTxt').textContent=contractRaw;
+
+    var gmailUrl='https://mail.google.com/mail/?view=cm&fs=1'
+      +'&to='+encodeURIComponent(clientEmail)
+      +'&su='+encodeURIComponent(emailSubject)
+      +'&body='+encodeURIComponent(emailBody)
+      +'&from='+encodeURIComponent('gideonmoffitt08@gmail.com');
+    document.getElementById('gmailBtn').href=gmailUrl;
+
+    document.getElementById('cbarName').textContent=ownerName+' — '+bizName;
+    document.getElementById('cbarSvc').textContent=svcType;
+    document.getElementById('cbarDep').textContent='Deposit: $'+deposit;
+    document.getElementById('cbar').classList.add('on');
+
+    document.getElementById('loaderWrap').classList.remove('on');
+    document.getElementById('outWrap').classList.add('on');
+
+  }catch(err){
+    document.getElementById('loaderWrap').classList.remove('on');
+    document.getElementById('formWrap').style.display='block';
+    showErr('Error: '+err.message);
+  }
+}
+
+function cp(id,btn){
+  navigator.clipboard.writeText(document.getElementById(id).textContent).then(function(){
+    btn.textContent='Copied!';
+    setTimeout(function(){btn.textContent='Copy';},2000);
+  });
+}
+
+function cpList(btn){
+  var items=Array.from(document.getElementById('ckList').querySelectorAll('li')).map(function(li){return '□ '+li.textContent;}).join('\n');
+  navigator.clipboard.writeText(items).then(function(){
+    btn.textContent='Copied!';
+    setTimeout(function(){btn.textContent='Copy';},2000);
+  });
+}
+
+function resetForm(){
+  document.getElementById('outWrap').classList.remove('on');
+  document.getElementById('cbar').classList.remove('on');
+  document.getElementById('formWrap').style.display='block';
+}
+
+function clearForm(){
+  ['bizName','ownerName','clientEmail','clientPhone','bizType','bizLocation','projVal','timeline','howFound','callNotes'].forEach(function(id){
+    document.getElementById(id).value='';
+  });
+  document.getElementById('svcType').value='';
+}
+</script>
+</body>
+</html>
