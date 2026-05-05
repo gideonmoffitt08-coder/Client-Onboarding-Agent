@@ -65,7 +65,7 @@ h1 em{font-style:normal;color:var(--red)}
 <body>
 <div class="wrap">
 
-<div style="font-size:0.58rem;letter-spacing:0.25em;color:var(--muted);margin-bottom:12px;text-transform:uppercase">Gideon Moffitt Web Design</div>
+<div style="font-size:0.58rem;letter-spacing:0.25em;color:var(--muted);margin-bottom:12px;text-transform:uppercase">Yellow Wall Ventures</div>
 <h1>Client <em>Onboarding</em> Agent</h1>
 <p class="sub">Enter new client info — get a welcome email, checklist, intake questions, invoice and contract summary in 60 seconds.</p>
 
@@ -223,7 +223,7 @@ async function generate(){
   document.getElementById('formWrap').style.display='none';
   document.getElementById('loaderWrap').classList.add('on');
 
-  var prompt='You are a professional onboarding assistant for Gideon Moffitt Web Design, a web design agency in Houston TX. Email: gideonmoffitt08@gmail.com\n\nNew client:\n- Business: '+bizName+'\n- Owner: '+ownerName+'\n- Email: '+clientEmail+'\n- Phone: '+(clientPhone||'Not provided')+'\n- Type: '+(bizType||'Small business')+'\n- Location: '+(bizLocation||'Houston TX area')+'\n- Service: '+svcType+'\n- Total value: $'+projVal+'\n- Deposit (50%): $'+deposit+'\n- Final (50%): $'+finalPay+'\n- Timeline: '+timeline+'\n- How found: '+(howFound||'Cold outreach')+'\n- Notes: '+(callNotes||'None')+'\n\nGenerate 5 sections using EXACTLY these markers:\n\nSECTION_EMAIL_BEGIN\nSubject: [subject]\n\n[email body]\nSECTION_EMAIL_END\n\nSECTION_CHECKLIST_BEGIN\n- [step 1]\n- [step 2]\n[all steps from deposit payment to site launch]\nSECTION_CHECKLIST_END\n\nSECTION_INTAKE_BEGIN\n1. [question]\n2. [question]\n[8 questions specific to '+bizType+' and '+svcType+']\nSECTION_INTAKE_END\n\nSECTION_INVOICE_BEGIN\nINVOICE\nInvoice #: '+invNum+'\nDate: '+today+'\n\nFrom: Gideon Moffitt Web Design | gideonmoffitt08@gmail.com\nTo: '+bizName+' | '+ownerName+' | '+clientEmail+'\n\nService: '+svcType+'\nTotal: $'+projVal+'\nDeposit due now: $'+deposit+'\nFinal payment on completion: $'+finalPay+'\n\nPayment: Venmo, Zelle, CashApp, or check to Gideon Moffitt\nSECTION_INVOICE_END\n\nSECTION_CONTRACT_BEGIN\n[Contract summary with: Services, Payment Terms, Timeline, Revisions, Ownership, Cancellation]\nSECTION_CONTRACT_END';
+  var prompt='You are a professional onboarding assistant for Yellow Wall Ventures, a web design agency in Houston TX. Email: gideonmoffitt08@gmail.com\n\nNew client:\n- Business: '+bizName+'\n- Owner: '+ownerName+'\n- Email: '+clientEmail+'\n- Phone: '+(clientPhone||'Not provided')+'\n- Type: '+(bizType||'Small business')+'\n- Location: '+(bizLocation||'Houston TX area')+'\n- Service: '+svcType+'\n- Total value: $'+projVal+'\n- Deposit (50%): $'+deposit+'\n- Final (50%): $'+finalPay+'\n- Timeline: '+timeline+'\n- How found: '+(howFound||'Cold outreach')+'\n- Notes: '+(callNotes||'None')+'\n\nGenerate 5 sections using EXACTLY these markers:\n\nSECTION_EMAIL_BEGIN\nSubject: [subject]\n\n[email body]\nSECTION_EMAIL_END\n\nSECTION_CHECKLIST_BEGIN\n- [step 1]\n- [step 2]\n[all steps from deposit payment to site launch]\nSECTION_CHECKLIST_END\n\nSECTION_INTAKE_BEGIN\n1. [question]\n2. [question]\n[8 questions specific to '+bizType+' and '+svcType+']\nSECTION_INTAKE_END\n\nSECTION_INVOICE_BEGIN\nINVOICE\nInvoice #: '+invNum+'\nDate: '+today+'\n\nFrom: Yellow Wall Ventures | gideonmoffitt08@gmail.com\nTo: '+bizName+' | '+ownerName+' | '+clientEmail+'\n\nService: '+svcType+'\nTotal: $'+projVal+'\nDeposit due now: $'+deposit+'\nFinal payment on completion: $'+finalPay+'\n\nPayment: Venmo, Zelle, CashApp, or check to Gideon Moffitt\nSECTION_INVOICE_END\n\nSECTION_CONTRACT_BEGIN\n[Contract summary with: Services, Payment Terms, Timeline, Revisions, Ownership, Cancellation]\nSECTION_CONTRACT_END';
 
   try{
     var response=await fetch('https://api.anthropic.com/v1/messages',{
@@ -261,7 +261,7 @@ async function generate(){
     var contractRaw=extract('CONTRACT');
 
     var subjMatch=emailRaw.match(/^Subject:\s*(.+)$/m);
-    var emailSubject=subjMatch?subjMatch[1].trim():'Welcome to Gideon Moffitt Web Design';
+    var emailSubject=subjMatch?subjMatch[1].trim():'Welcome to Yellow Wall Ventures';
     var emailBody=emailRaw.replace(/^Subject:.+\n\n?/m,'').trim();
 
     document.getElementById('emailTxt').textContent=emailBody;
@@ -278,7 +278,7 @@ async function generate(){
     document.getElementById('invoiceTxt').textContent=invoiceRaw;
     document.getElementById('contractTxt').textContent=contractRaw;
 
-    var gmailUrl='https://mail.google.com/mail/?view=cm&fs=1'
+var gmailUrl='https://mail.google.com/mail/?view=cm&fs=1'
       +'&to='+encodeURIComponent(clientEmail)
       +'&su='+encodeURIComponent(emailSubject)
       +'&body='+encodeURIComponent(emailBody)
